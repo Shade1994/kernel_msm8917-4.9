@@ -1465,4 +1465,5 @@ config TOUCHSCREEN_GT9XX_ULYSSE
 source "drivers/input/touchscreen/gt9xx_ulysse/Kconfig"
 source "drivers/input/touchscreen/ft5435_ulysse/Kconfig"
 
+source "drivers/input/touchscreen/sec_incell_ts/Kconfig"
 endif
