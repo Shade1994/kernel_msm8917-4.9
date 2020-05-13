@@ -217,4 +217,7 @@ source "drivers/tee/Kconfig"
 source "drivers/opp/Kconfig"
 
 source "drivers/energy_model/Kconfig"
+
+source "drivers/muic/Kconfig"
+
 endmenu
