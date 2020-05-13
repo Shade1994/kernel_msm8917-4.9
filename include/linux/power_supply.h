@@ -378,6 +378,19 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
 	POWER_SUPPLY_PROP_BATTERY_TYPE,
 	POWER_SUPPLY_PROP_CYCLE_COUNTS,
+#if defined(CONFIG_BATTERY_SAMSUNG_V2)
+	POWER_SUPPLY_PROP_ALLOW_DETECTION,
+	POWER_SUPPLY_PROP_CHARGE_ENABLED,
+	POWER_SUPPLY_PROP_MULTI_CHARGER_MODE,
+	POWER_SUPPLY_PROP_READ_SLAVE_REG,
+	POWER_SUPPLY_PROP_AFC_CHARGER_MODE,
+	/* Properties of type `const char *' */
+	POWER_SUPPLY_PROP_USB_CONFIGURE,
+
+	POWER_SUPPLY_PROP_FILTER_CFG,
+	POWER_SUPPLY_PROP_MAX,
+	POWER_SUPPLY_EXT_PROP_MAX = POWER_SUPPLY_PROP_MAX + 256,
+#endif	
 };
 
 enum power_supply_type {
@@ -414,7 +427,12 @@ enum power_supply_type {
 	#endif
 	#endif
 	/*HS70 add for HS70-919 enable AFC function by qianyingdong at 2019/11/18 end*/
-
+#if defined(CONFIG_BATTERY_SAMSUNG_V2)
+	POWER_SUPPLY_TYPE_POWER_SHARING,/* power sharing cable(19) */
+	POWER_SUPPLY_TYPE_OTG,			/* OTG (20) */
+	POWER_SUPPLY_TYPE_POGO,			/* POGO (21) */
+	POWER_SUPPLY_TYPE_MAX,
+#endif
 };
 
 /* HS60 add for SR-ZQL1695-01000000455 Provide sysFS node named /sys/class/power_supply/battery/batt_current_event by gaochao at 2019/08/08 start */
