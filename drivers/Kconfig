@@ -218,4 +218,6 @@ source "drivers/samsung/Kconfig"
 
 source "drivers/afc/Kconfig"
 
+source "drivers/muic/Kconfig"
+
 endmenu
