@@ -957,7 +957,7 @@ static irqreturn_t msm_cpp_irq(int irq_num, void *data)
 		} else {
 			pr_err("Fatal invalid tx level %d", tx_level);
 			goto err;
-		}
+ 		}
 		spin_lock_irqsave(&cpp_dev->tasklet_lock, flags);
 		queue_cmd = &cpp_dev->tasklet_queue_cmd[cpp_dev->taskletq_idx];
 		if (queue_cmd->cmd_used) {

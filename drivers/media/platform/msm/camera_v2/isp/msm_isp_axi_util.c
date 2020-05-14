@@ -246,10 +246,6 @@ static int msm_isp_validate_axi_request(struct vfe_device *vfe_dev,
 	case V4L2_PIX_FMT_P16GBRG10:
 	case V4L2_PIX_FMT_P16GRBG10:
 	case V4L2_PIX_FMT_P16RGGB10:
-	case V4L2_PIX_FMT_P16BGGR12:
-	case V4L2_PIX_FMT_P16GBRG12:
-	case V4L2_PIX_FMT_P16GRBG12:
-	case V4L2_PIX_FMT_P16RGGB12:
 	case V4L2_PIX_FMT_JPEG:
 	case V4L2_PIX_FMT_META:
 	case V4L2_PIX_FMT_META10:
@@ -391,10 +387,6 @@ static uint32_t msm_isp_axi_get_plane_size(
 	case V4L2_PIX_FMT_P16GBRG10:
 	case V4L2_PIX_FMT_P16GRBG10:
 	case V4L2_PIX_FMT_P16RGGB10:
-	case V4L2_PIX_FMT_P16BGGR12:
-	case V4L2_PIX_FMT_P16GBRG12:
-	case V4L2_PIX_FMT_P16GRBG12:
-	case V4L2_PIX_FMT_P16RGGB12:
 		size = plane_cfg[plane_idx].output_height *
 		plane_cfg[plane_idx].output_width;
 		break;
@@ -800,6 +792,14 @@ void msm_isp_check_for_output_error(struct vfe_device *vfe_dev,
 					sof_info)) {
 					pr_err("drop frame failed\n");
 				}
+				trace_printk("vfeid: %d frmid: %d RegUpdt Fail ErrMask: 0x%x \n",
+					vfe_dev->pdev->id,
+					vfe_dev->axi_data.src_info[VFE_PIX_0].frame_id,
+					sof_info->reg_update_fail_mask_ext);
+				pr_err("vfeid: %d frmid: %d RegUpdt Fail ErrMask: 0x%x \n",
+					vfe_dev->pdev->id,
+					vfe_dev->axi_data.src_info[VFE_PIX_0].frame_id,
+					sof_info->reg_update_fail_mask_ext);
 			}
 		}
 
@@ -2294,9 +2294,9 @@ static int msm_isp_process_done_buf(struct vfe_device *vfe_dev,
 			msm_isp_send_event(vfe_dev,
 			ISP_EVENT_BUF_DIVERT, &buf_event);
 	} else {
-		ISP_DBG("%s: vfe_id %d send buf done buf-id %d bufq %x\n",
+		ISP_DBG("%s: vfe_id %d send buf done buf-id %d bufq %x stream_id %xsession %x \n",
 			__func__, vfe_dev->pdev->id, buf->buf_idx,
-			buf->bufq_handle);
+			buf->bufq_handle,stream_info->stream_id,stream_info->session_id);
 		msm_isp_send_event(vfe_dev, ISP_EVENT_BUF_DONE,
 			&buf_event);
 		buf->buf_debug.put_state[

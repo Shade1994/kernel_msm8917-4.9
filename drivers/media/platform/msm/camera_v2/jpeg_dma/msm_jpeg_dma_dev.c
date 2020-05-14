@@ -935,11 +935,11 @@ static int msm_jpegdma_streamoff(struct file *file,
 {
 	struct jpegdma_ctx *ctx = msm_jpegdma_ctx_from_fh(fh);
 	int ret;
-	mutex_lock(&ctx->lock);
+
 	ret = v4l2_m2m_streamoff(file, ctx->m2m_ctx, buf_type);
 	if (ret < 0)
 		dev_err(ctx->jdma_device->dev, "Stream off fails\n");
-	mutex_unlock(&ctx->lock);
+
 	return ret;
 }
 

@@ -19,8 +19,31 @@
 #include <linux/regulator/consumer.h>
 #include <media/adsp-shmem-device.h>
 
+#if !defined(CONFIG_MUIC_UNIVERSAL_SM5705_AFC)
+//#define DISABLE_AFC
+#endif
+
+#ifdef DISABLE_AFC
+extern int sm5705_fled_muic_camera_flash_work_on(void);
+extern int sm5705_fled_muic_camera_flash_work_off(void);
+#endif
+
+#if defined(CONFIG_USE_CAMERA_HW_BIG_DATA)
+#include <linux/kernel.h>
+#include <linux/syscalls.h>
+#endif
+
+#if defined(CONFIG_USE_CAMERA_HW_BIG_DATA)
+//#define HWB_FILE_OPERATION 1
+uint32_t sec_sensor_position;
+uint32_t sec_is_securemode;
+uint32_t sec_sensor_clk_size;
+
+static struct cam_hw_param_collector cam_hwparam_collector;
+#endif
+
 #undef CDBG
-#define CDBG(fmt, args...) pr_debug(fmt, ##args)
+#define CDBG(fmt, args...) pr_err(fmt, ##args)
 
 static struct msm_camera_i2c_fn_t msm_sensor_cci_func_tbl;
 static struct msm_camera_i2c_fn_t msm_sensor_secure_func_tbl;
@@ -122,6 +145,9 @@ int msm_sensor_power_down(struct msm_sensor_ctrl_t *s_ctrl)
 	struct msm_camera_power_ctrl_t *power_info;
 	enum msm_camera_device_type_t sensor_device_type;
 	struct msm_camera_i2c_client *sensor_i2c_client;
+#ifdef DISABLE_AFC
+	uint8_t camera_id = 0;
+#endif
 
 	if (!s_ctrl) {
 		pr_err("%s:%d failed: s_ctrl %pK\n",
@@ -142,6 +168,13 @@ int msm_sensor_power_down(struct msm_sensor_ctrl_t *s_ctrl)
 		return -EINVAL;
 	}
 
+#ifdef DISABLE_AFC
+	camera_id = s_ctrl->sensordata->sensor_info->position;
+	if (0 == camera_id) {
+		sm5705_fled_muic_camera_flash_work_off();
+	}
+#endif
+
 	/* Power down secure session if it exist*/
 	if (s_ctrl->is_secure)
 		msm_camera_tz_i2c_power_down(sensor_i2c_client);
@@ -159,6 +192,10 @@ int msm_sensor_power_up(struct msm_sensor_ctrl_t *s_ctrl)
 	const char *sensor_name;
 	uint32_t retry = 0;
 
+#ifdef DISABLE_AFC
+	uint8_t  camera_id;
+#endif
+
 	if (!s_ctrl) {
 		pr_err("%s:%d failed: %pK\n",
 			__func__, __LINE__, s_ctrl);
@@ -173,6 +210,9 @@ int msm_sensor_power_up(struct msm_sensor_ctrl_t *s_ctrl)
 	slave_info = s_ctrl->sensordata->slave_info;
 	sensor_name = s_ctrl->sensordata->sensor_name;
 
+#ifdef DISABLE_AFC
+	camera_id = s_ctrl->sensordata->sensor_info->position;
+#endif
 	if (!power_info || !sensor_i2c_client || !slave_info ||
 		!sensor_name) {
 		pr_err("%s:%d failed: %pK %pK %pK %pK\n",
@@ -186,6 +226,11 @@ int msm_sensor_power_up(struct msm_sensor_ctrl_t *s_ctrl)
 
 	CDBG("Sensor %d tagged as %s\n", s_ctrl->id,
 		(s_ctrl->is_secure)?"SECURE":"NON-SECURE");
+#ifdef DISABLE_AFC
+	if (0 == camera_id) {
+		sm5705_fled_muic_camera_flash_work_on();
+	}
+#endif
 
 	for (retry = 0; retry < 3; retry++) {
 		if (s_ctrl->is_secure) {
@@ -294,6 +339,10 @@ int msm_sensor_match_id(struct msm_sensor_ctrl_t *s_ctrl)
 	rc = sensor_i2c_client->i2c_func_tbl->i2c_read(
 		sensor_i2c_client, slave_info->sensor_id_reg_addr,
 		&chipid, MSM_CAMERA_I2C_WORD_DATA);
+	pr_err("%s: slave_info->sensor_slave_addr = 0x%x \n",	__func__, slave_info->sensor_slave_addr);
+	pr_err("%s: slave_info->sensor_id_reg_addr = 0x%x \n",	__func__, slave_info->sensor_id_reg_addr);
+
+	pr_err("%s: read id: 0x%x expected id 0x%x:\n", __func__, chipid, slave_info->sensor_id);
 	if (rc < 0) {
 		pr_err("%s: %s: read id failed\n", __func__, sensor_name);
 		return rc;
