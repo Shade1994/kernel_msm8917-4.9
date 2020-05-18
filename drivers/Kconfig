@@ -220,4 +220,5 @@ source "drivers/energy_model/Kconfig"
 
 source "drivers/muic/Kconfig"
 
+source "drivers/motor/Kconfig"
 endmenu
