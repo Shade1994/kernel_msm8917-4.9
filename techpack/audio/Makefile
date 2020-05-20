@@ -12,7 +12,7 @@ include $(srctree)/techpack/audio/config/sdxpoorwillsauto.conf
 export
 endif
 ifeq ($(CONFIG_ARCH_MSM8917), y)
-include $(srctree)/techpack/audio/config/sdm450auto.conf
+include $(srctree)/techpack/audio/config/msm8917auto.conf
 export
 endif
 
@@ -40,7 +40,7 @@ LINUXINCLUDE    += \
 endif
 ifeq ($(CONFIG_ARCH_MSM8917), y)
 LINUXINCLUDE    += \
-                -include $(srctree)/techpack/audio/config/sdm450autoconf.h
+                -include $(srctree)/techpack/audio/config/msm8917autoconf.h
 endif
 
 obj-y += asoc/

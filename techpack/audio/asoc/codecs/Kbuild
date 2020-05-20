@@ -42,7 +42,7 @@ ifeq ($(KERNEL_BUILD), 0)
 	ifeq ($(CONFIG_ARCH_MSM8917), y)
 		include $(AUDIO_ROOT)/config/sdm450auto.conf
 		export
-		INCS    +=  -include $(AUDIO_ROOT)/config/sdm450autoconf.h
+		INCS    +=  -include $(AUDIO_ROOT)/config/msm8917autoconf.h
 	endif
 endif
 
@@ -189,16 +189,6 @@ KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/dsp/Module
 KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/soc/Module.symvers
 endif
 
-ifeq ($(KERNEL_BUILD), 1)
-	obj-y	+= wcd934x/
-	obj-y	+= sdm660_cdc/
-	obj-y	+= msm_sdw/
-# huaqin add bringup nxp & foursemi smartpa add driver code by xudayi at 2019/07/15 start
-	obj-y	+= tfa98xx/
-	obj-y	+= aw8864/
-# huaqin add bringup nxp & foursemi smartpa add driver code by xudayi at 2019/07/15 end
-	obj-y	+= tas2562/
-endif
 # Module information used by KBuild framework
 obj-$(CONFIG_WCD9XXX_CODEC_CORE) += wcd_core_dlkm.o
 wcd_core_dlkm-y := $(CORE_OBJS)
