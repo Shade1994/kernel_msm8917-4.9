@@ -194,12 +194,9 @@ ifeq ($(KERNEL_BUILD), 1)
 	obj-y	+= sdm660_cdc/
 	obj-y	+= msm_sdw/
 # huaqin add bringup nxp & foursemi smartpa add driver code by xudayi at 2019/07/15 start
-	obj-y	+= fs16xx/
 	obj-y	+= tfa98xx/
 	obj-y	+= aw8864/
 # huaqin add bringup nxp & foursemi smartpa add driver code by xudayi at 2019/07/15 end
-	obj-y	+= aw882xx/
-	obj-y	+= aw87359/
 	obj-y	+= tas2562/
 endif
 # Module information used by KBuild framework
