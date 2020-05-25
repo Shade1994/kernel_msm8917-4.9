@@ -32,6 +32,14 @@
 #include "codecs/msm-cdc-pinctrl.h"
 #include "msm8952.h"
 
+#ifdef CONFIG_SEC_MPP_SHARE
+#include <linux/sec_mux_sel.h>
+#endif /* CONFIG_SEC_MPP_SHARE */
+#ifdef CONFIG_SAMSUNG_JACK
+#include <linux/sec_jack.h>
+#include <linux/qpnp/qpnp-adc.h>
+#include <linux/qpnp/pin.h>
+#endif /* CONFIG_SAMSUNG_JACK */
 #define DRV_NAME "msm8952-asoc-wcd"
 
 #define MSM_INT_DIGITAL_CODEC "msm-dig-codec"
@@ -68,12 +76,15 @@ static struct snd_info_entry *codec_root;
 
 static int msm8952_enable_dig_cdc_clk(struct snd_soc_codec *codec, int enable,
 					bool dapm);
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 static bool msm8952_swap_gnd_mic(struct snd_soc_codec *codec, bool active);
+#endif /* #ifdef CONFIG_SND_SOC_WCD_MBHC */
 static int msm8952_mclk_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event);
 static int msm8952_wsa_switch_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event);
 
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 /*
  * Android L spec
  * Need to report LINEIN
@@ -100,6 +111,13 @@ static struct wcd_mbhc_config mbhc_cfg = {
 	.anc_micbias = 0,
 	.enable_anc_mic_detect = false,
 };
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
+
+
+#ifdef CONFIG_SAMSUNG_JACK
+static struct snd_soc_jack hs_jack;
+static struct mutex jack_mutex;
+#endif /* CONFIG_SAMSUNG_JACK */
 
 static struct afe_clk_set mi2s_tx_clk = {
 	AFE_API_VERSION_I2S_CONFIG,
@@ -367,6 +385,7 @@ static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 	return 0;
 }
 
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 static bool msm8952_swap_gnd_mic(struct snd_soc_codec *codec, bool active)
 {
 	struct snd_soc_card *card = codec->component.card;
@@ -402,7 +421,9 @@ static bool msm8952_swap_gnd_mic(struct snd_soc_codec *codec, bool active)
 	pr_debug("%s: swap select switch %d to %d\n", __func__, value, !value);
 	return true;
 }
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
 
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 /* Validate whether US EU switch is present or not */
 int is_us_eu_switch_gpio_support(struct platform_device *pdev,
 		struct msm_asoc_mach_data *pdata)
@@ -427,6 +448,7 @@ int is_us_eu_switch_gpio_support(struct platform_device *pdev,
 	}
 	return 0;
 }
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
 
 static int msm_proxy_rx_ch_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
@@ -472,6 +494,8 @@ static int msm_mi2s_rx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 
 	pr_debug("%s: Num of channels = %d Sample rate = %d\n", __func__,
 			msm_pri_mi2s_rx_ch, mi2s_rx_sample_rate);
+	param_set_mask(params, SNDRV_PCM_HW_PARAM_FORMAT,
+			mi2s_rx_bit_format);
 	rate->min = rate->max = mi2s_rx_sample_rate;
 	channels->min = channels->max = msm_pri_mi2s_rx_ch;
 
@@ -1505,6 +1529,7 @@ static void msm_quin_mi2s_snd_shutdown(struct snd_pcm_substream *substream)
 	}
 }
 
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 static void *def_msm8952_wcd_mbhc_cal(void)
 {
 	void *msm8952_wcd_cal;
@@ -1553,6 +1578,7 @@ static void *def_msm8952_wcd_mbhc_cal(void)
 
 	return msm8952_wcd_cal;
 }
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
 
 static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 {
@@ -1561,7 +1587,9 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = snd_soc_codec_get_dapm(ana_cdc);
 	struct msm_asoc_mach_data *pdata = snd_soc_card_get_drvdata(rtd->card);
 	struct snd_card *card;
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 	int ret = -ENOMEM;
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
 
 	snd_soc_add_codec_controls(ana_cdc, msm_snd_controls,
 			ARRAY_SIZE(msm_snd_controls));
@@ -1590,6 +1618,11 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 	msm_anlg_cdc_spk_ext_pa_cb(enable_spk_ext_pa, ana_cdc);
 	msm_dig_cdc_hph_comp_cb(config_hph_compander_gpio, dig_cdc);
 
+#ifdef CONFIG_SAMSUNG_JACK
+	hs_jack.codec = codec;
+#endif /* CONFIG_SAMSUNG_JACK */
+
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 	mbhc_cfg.calibration = def_msm8952_wcd_mbhc_cal();
 	if (mbhc_cfg.calibration) {
 		ret = msm_anlg_cdc_hs_detect(ana_cdc, &mbhc_cfg);
@@ -1598,6 +1631,7 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 			return ret;
 		}
 	}
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
 	card = rtd->card->snd_card;
 	if (!codec_root)
 		codec_root = snd_info_create_subdir(card->module, "codecs",
@@ -2303,6 +2337,27 @@ static struct snd_soc_dai_link msm8952_dai[] = {
 		.ignore_pmdown_time = 1,
 		.id = MSM_FRONTEND_DAI_QCHAT,
 	},
+#if defined(CONFIG_SND_SOC_JACK_AUDIO)
+	{/* hw:x,38 */
+		.name = "MSM8952 JACK LowLatency",
+		.stream_name = "MultiMedia17",
+		.cpu_dai_name	= "MultiMedia17",
+		.platform_name	= "msm-pcm-dsp.1",
+		.dynamic = 1,
+		.dpcm_playback = 1,
+		.dpcm_capture = 1,
+		.async_ops = ASYNC_DPCM_SND_SOC_PREPARE |
+			ASYNC_DPCM_SND_SOC_HW_PARAMS,
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.codec_name = "snd-soc-dummy",
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			SND_SOC_DPCM_TRIGGER_POST},
+		.ignore_suspend = 1,
+		/* this dainlink has playback support */
+		.ignore_pmdown_time = 1,
+		.id = MSM_FRONTEND_DAI_MULTIMEDIA17,
+	},
+#else
 	{/* hw:x,38 */
 		.name = "MSM8X16 Compress10",
 		.stream_name = "Compress10",
@@ -2318,6 +2373,7 @@ static struct snd_soc_dai_link msm8952_dai[] = {
 		.ignore_pmdown_time = 1,
 		.id = MSM_FRONTEND_DAI_MULTIMEDIA17,
 	},
+#endif
 	{/* hw:x,39 */
 		.name = "MSM8X16 Compress11",
 		.stream_name = "Compress11",
@@ -2628,6 +2684,19 @@ static struct snd_soc_dai_link msm8952_dai[] = {
 		.ops = &msm8952_quin_mi2s_be_ops,
 		.ignore_suspend = 1,
 	},
+#ifdef CONFIG_SEC_SND_ADAPTATION
+	{
+		.name = "ADAPTATION Hostless",
+		.stream_name = "ADAPTATION Hostless",
+		.cpu_dai_name = "snd-soc-dummy-dai",
+		.platform_name = "q6audio-adaptation",
+		.no_pcm = 1,
+		.ignore_suspend = 1,
+		.ignore_pmdown_time = 1,
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.codec_name = "snd-soc-dummy",
+	},
+#endif /* CONFIG_SEC_SND_ADAPTATION */
 };
 static struct snd_soc_dai_link msm8952_hdmi_dba_dai_link[] = {
 	{
@@ -2873,6 +2942,116 @@ codec_dai:
 err:
 	return ret;
 }
+
+#ifdef CONFIG_SAMSUNG_JACK
+void msm8952_set_micbias(bool state)
+{
+	struct snd_soc_jack *jack = &hs_jack;
+	struct snd_soc_codec *codec;
+	struct snd_soc_dapm_context *dapm;
+	char *str = "MIC BIAS Power External2";
+	int ret = 0;
+
+	if (jack->codec == NULL) {
+		pr_err("%s codec is NULL\n", __func__);
+		return;
+	}
+	pr_info("%s : %s, state=%d\n", __func__, str, state);
+
+	mutex_lock(&jack_mutex);
+	codec = jack->codec;
+	dapm = &codec->dapm;
+
+	if (state == true)
+		ret = snd_soc_dapm_force_enable_pin(dapm, str);
+	else
+		ret = snd_soc_dapm_disable_pin(dapm, str);
+
+	if(ret < 0) {
+		pr_err("%s is failed(%d)\n",
+			__func__, ret);
+	}
+
+	snd_soc_dapm_sync(dapm);
+	mutex_unlock(&jack_mutex);
+}
+
+void msm8952_mpp_enable(int earjack_adc, int enable)
+{
+	int rc = 0;
+	struct qpnp_pin_cfg mpp_param = { 
+		.mode = 4,
+		.invert = 0,
+		.output_type = 0,
+		.ain_route = 1,
+		.src_sel = 0,
+		.vin_sel = 3,
+		.master_en = 0,
+	};
+
+	if (earjack_adc > 0) {
+		mpp_param.master_en = enable;
+		rc = qpnp_pin_config(earjack_adc, &mpp_param);
+
+		if (rc < 0)
+			pr_err("%s: failed to config mpp port(%d)\n",
+				__func__, rc);
+	}
+}
+
+static int msm8952_get_adc(void)
+{
+	struct snd_soc_jack *jack = &hs_jack;
+	struct snd_soc_codec *codec;
+	struct msm8916_asoc_mach_data *pdata;
+	struct qpnp_vadc_result result;
+	struct qpnp_vadc_chip *earjack_vadc;
+	uint32_t mpp_ch;
+	int adc;
+
+	if (jack->codec == NULL) {
+		pr_err("%s codec==NULL\n", __func__);
+		return -1;
+	}
+	codec = jack->codec;
+	pdata = snd_soc_card_get_drvdata(codec->component.card);
+
+	mpp_ch = pdata->mpp_ch_scale[0] + P_MUX1_1_3 - 1;
+
+	if (pdata->mpp_ch_scale[2] == 1)
+		mpp_ch = pdata->mpp_ch_scale[0] + P_MUX1_1_1 - 1;
+	else if (pdata->mpp_ch_scale[2] == 3)
+		mpp_ch = pdata->mpp_ch_scale[0] + P_MUX1_1_3 - 1;
+	else
+		pr_err("%s - invalid channel scale=%d\n",
+			__func__, pdata->mpp_ch_scale[2]);
+
+#ifdef CONFIG_SEC_MPP_SHARE
+	if (!pdata->mpp_standalone_mode)
+		sec_mpp_mux_control(EAR_ADC_MUX_SEL_NUM,
+			SEC_MUX_SEL_EAR_ADC, 1);
+#endif /* CONFIG_SEC_MPP_SHARE */
+
+	msm8952_mpp_enable(pdata->earjack_adc, 1);
+
+	earjack_vadc = qpnp_get_vadc(codec->component.card->dev,
+		"earjack-read");
+	qpnp_vadc_read(earjack_vadc,  mpp_ch, &result);
+
+	msm8952_mpp_enable(pdata->earjack_adc, 0);
+
+#ifdef CONFIG_SEC_MPP_SHARE
+	if (!pdata->mpp_standalone_mode)
+		sec_mpp_mux_control(EAR_ADC_MUX_SEL_NUM,
+			SEC_MUX_SEL_EAR_ADC, 0);
+#endif /* CONFIG_SEC_MPP_SHARE */
+
+	/* Get voltage in microvolts */
+	adc = ((int)result.physical)/1000;
+
+	return adc;
+}
+#endif /* CONFIG_SAMSUNG_JACK */
 
 int msm8952_init_wsa_switch_supply(struct platform_device *pdev,
 		struct msm_asoc_mach_data *pdata)

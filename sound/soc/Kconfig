@@ -39,6 +39,18 @@ config SND_SOC_COMPRESS
 config SND_SOC_TOPOLOGY
 	bool
 
+config SND_SOC_JACK_AUDIO
+	tristate "Samsung Jack Audio"
+	default n
+	help
+		To add support for Samsung Jack Audio
+
+config SEC_SND_ADAPTATION
+	tristate "Samsung ADSP Adaptation"
+	default n
+	help
+		To add support for Samsung ADSP solution
+
 # All the supported SoCs
 source "sound/soc/adi/Kconfig"
 source "sound/soc/amd/Kconfig"

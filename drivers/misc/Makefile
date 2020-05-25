@@ -65,6 +65,9 @@ obj-$(CONFIG_MEMORY_STATE_TIME)	+= memory_state_time.o
 obj-$(CONFIG_QCOM_XR_SMRTVWR_MISC) += qcom-xr-smrtvwr-misc.o
 obj-$(CONFIG_TUSB1064_XR_MISC) += tusb1064.o
 obj-$(CONFIG_VXR200_XR_MISC) += vxr7200.o
+# Samsung Jack
+obj-$(CONFIG_SAMSUNG_JACK)	+= sec_jack.o
+obj-$(CONFIG_SEC_MPP_SHARE)	+= sec_mux_sel.o
 
 
 lkdtm-$(CONFIG_LKDTM)		+= lkdtm_core.o

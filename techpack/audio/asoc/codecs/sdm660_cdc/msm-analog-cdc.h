@@ -206,6 +206,9 @@ struct sdm660_cdc_priv {
 	bool ext_spk_boost_set;
 	struct on_demand_supply on_demand_list[ON_DEMAND_SUPPLIES_MAX];
 	struct regulator *spkdrv_reg;
+#ifdef CONFIG_SAMSUNG_JACK
+	int micb_2_ref_cnt;
+#endif /* CONFIG_SAMSUNG_JACK */
 	struct blocking_notifier_head notifier_mbhc;
 	/* mbhc module */
 	struct wcd_mbhc mbhc;
@@ -224,6 +227,12 @@ struct sdm660_cdc_priv {
 	int child_count;
 	struct msm_cap_mode cap_mode;
 	char pmic_analog[PMIC_ANOLOG_SIZE];
+	bool cfilt_ref_sel; /* 0x142, bit[1]:CFILT_REF_SEL */
+	bool tx2n_gnd_sel; /* 0x143, bit[2]:TX2_GND_SEL */
+	bool tx2n_int_pullup_en; /* 0x143, bit[3]:TX2_INT_PULLUP_EN */
+	bool tx2_int_rbias_en; /* 0x143, bit[4]:TX2_INT_RBIAS_EN */
+	bool tx1n_cfilt_ref_sel; /* 0x145, bit[0]:TX1N_CFILT_REF_SEL */
+	bool cdc_a_tx_1_2_atest_ctl_2;
 };
 
 struct sdm660_cdc_pdata {
