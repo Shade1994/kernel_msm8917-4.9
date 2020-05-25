@@ -22,7 +22,7 @@
 #include <linux/platform_device.h>
 #include <linux/errno.h>
 #include <linux/err.h>
-#include <linux/switch.h>
+#include "../staging/android/switch/switch.h"
 #include <linux/input.h>
 #include <linux/timer.h>
 #include <linux/wakelock.h>

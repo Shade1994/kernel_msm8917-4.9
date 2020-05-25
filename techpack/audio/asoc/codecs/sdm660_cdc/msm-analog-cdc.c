@@ -2692,14 +2692,14 @@ static int msm_anlg_cdc_codec_enable_micbias(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-#ifdef CONFIG_SAMSUNG_JACK
+#ifdef CONFIG_SAMSUNG_JACK_TODO
 static int msm_anlg_cdc_codec_force_enable_micbias(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol,
 		int event)
 {
-	struct snd_soc_codec *codec = w->codec;
+	struct snd_soc_codec *codec = snd_soc_dapm_to_codec(w->dapm);
 	struct msm8916_asoc_mach_data *pdata = NULL;
-	pdata = snd_soc_card_get_drvdata(w->codec->component.card);
+	pdata = snd_soc_card_get_drvdata(codec->component.card);
 
 	dev_dbg(codec->dev, "%s %d\n", __func__, event);
 	switch (event) {
@@ -3653,7 +3653,7 @@ static const struct snd_soc_dapm_widget msm_anlg_cdc_dapm_widgets[] = {
 		msm_anlg_cdc_codec_enable_micbias, SND_SOC_DAPM_PRE_PMU |
 		SND_SOC_DAPM_POST_PMD),
 
-#ifdef CONFIG_SAMSUNG_JACK
+#ifdef CONFIG_SAMSUNG_JACK_TODO
 	SND_SOC_DAPM_MICBIAS_E("MIC BIAS Power External2",
 		MSM89XX_PMIC_ANALOG_MICB_2_EN, ON_DEMAND_MICBIAS, 0,
 		msm_anlg_cdc_codec_force_enable_micbias,

@@ -89,6 +89,13 @@ struct msm_asoc_mach_data {
 	struct device_node *dmic_gpio_p; /* used by pinctrl API */
 	struct snd_soc_codec *codec;
 	struct snd_info_entry *codec_root;
+#ifdef CONFIG_SAMSUNG_JACK
+	int mpp_ch_scale[3];
+#ifdef CONFIG_SEC_MPP_SHARE
+	bool mpp_standalone_mode;
+#endif /* CONFIG_SEC_MPP_SHARE */
+	int earjack_adc;
+#endif /* CONFIG_SAMSUNG_JACK */
 };
 
 #endif/*__MSM8953_H*/

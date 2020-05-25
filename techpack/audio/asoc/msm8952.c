@@ -3165,7 +3165,6 @@ static int msm8952_asoc_machine_probe(struct platform_device *pdev)
 	const char *hs_micbias_type = "qcom,msm-hs-micbias-type";
 	const char *ext_pa = "qcom,msm-ext-pa";
 	const char *mclk = "qcom,msm-mclk-freq";
-	const char *wsa = "asoc-wsa-codec-names";
 	const char *type = NULL;
 	const char *ext_pa_str = NULL;
 	const char *spk_ext_pa = "qcom,msm-spk-ext-pa";
@@ -3174,6 +3173,7 @@ static int msm8952_asoc_machine_probe(struct platform_device *pdev)
 	int ret = 0;
 	struct resource *muxsel;
 #if IS_ENABLED(CONFIG_SND_SOC_WSA881X_ANALOG)
+	const char *wsa = "asoc-wsa-codec-names";
 	const char *wsa_prefix = "asoc-wsa-codec-prefixes";
 	const char *wsa_str = NULL;
 	const char *wsa_prefix_str = NULL;
@@ -3257,10 +3257,10 @@ parse_mclk_freq:
 	}
 	pdata->mclk_freq = id;
 
+#if IS_ENABLED(CONFIG_SND_SOC_WSA881X_ANALOG)
 	/*reading the gpio configurations from dtsi file*/
 	num_strings = of_property_count_strings(pdev->dev.of_node,
 			wsa);
-#if IS_ENABLED(CONFIG_SND_SOC_WSA881X_ANALOG)
 	if (num_strings > 0) {
 		if (wsa881x_get_probing_count() < 2) {
 			ret = -EPROBE_DEFER;
@@ -3369,14 +3369,14 @@ parse_mclk_freq:
 
 	pdata->spk_ext_pa_gpio_p = of_parse_phandle(pdev->dev.of_node,
 							spk_ext_pa, 0);
-
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 	ret = is_us_eu_switch_gpio_support(pdev, pdata);
 	if (ret < 0) {
 		pr_err("%s: failed to is_us_eu_switch_gpio_support %d\n",
 				__func__, ret);
 		goto err;
 	}
-
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
 	ret = is_ext_spk_gpio_support(pdev, pdata);
 	if (ret < 0)
 		pr_err("%s:  doesn't support external speaker pa\n",
@@ -3403,6 +3403,7 @@ parse_mclk_freq:
 			__func__, hs_micbias_type);
 		goto err;
 	}
+#ifdef CONFIG_SND_SOC_WCD_MBHC
 	if (!strcmp(type, "external")) {
 		dev_err(&pdev->dev, "Headset is using external micbias\n");
 		mbhc_cfg.hs_ext_micbias = true;
@@ -3410,6 +3411,7 @@ parse_mclk_freq:
 		dev_err(&pdev->dev, "Headset is using internal micbias\n");
 		mbhc_cfg.hs_ext_micbias = false;
 	}
+#endif  /* CONFIG_SND_SOC_WCD_MBHC */
 
 	ret = of_property_read_u32(pdev->dev.of_node,
 				  "qcom,msm-afe-clk-ver", &val);
@@ -3476,7 +3478,35 @@ parse_mclk_freq:
 			ret);
 		goto err;
 	}
+dev_info(&pdev->dev, "Sound card %s registered\n", card->name);
 
+#ifdef CONFIG_SAMSUNG_JACK
+#ifdef CONFIG_SEC_MPP_SHARE
+	pdata->mpp_standalone_mode = of_property_read_bool(pdev->dev.of_node,
+		"qcom,mpp-standalone-mode");
+#endif /* CONFIG_SEC_MPP_SHARE */
+	pdata->earjack_adc = of_get_named_gpio(pdev->dev.of_node,
+		"qcom,earjack-adc", 0);
+
+	ret = of_property_read_u32_array(pdev->dev.of_node,
+		"qcom,mpp-channel-scaling", pdata->mpp_ch_scale, 3);
+	if (ret < 0) {
+		dev_info(&pdev->dev, "can`t find mpp-ch from the dt\n");
+		pdata->mpp_ch_scale[0] = 2;
+		pdata->mpp_ch_scale[1] = 1;
+		pdata->mpp_ch_scale[2] = 1;
+	}
+	dev_dbg(&pdev->dev, "mpp-channel-scaling - %d %d %d\n",
+		pdata->mpp_ch_scale[0],
+		pdata->mpp_ch_scale[1],
+		pdata->mpp_ch_scale[2]);
+
+	jack_controls.set_micbias = msm8952_set_micbias;
+	jack_controls.get_adc = msm8952_get_adc;
+	jack_controls.snd_card_registered = 1;
+
+	mutex_init(&jack_mutex);
+#endif /* CONFIG_SAMSUNG_JACK */
 	return 0;
 err:
 	if (pdata->vaddr_gpio_mux_spkr_ctl)
