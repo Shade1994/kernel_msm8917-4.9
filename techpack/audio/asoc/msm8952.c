@@ -1619,7 +1619,7 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 	msm_dig_cdc_hph_comp_cb(config_hph_compander_gpio, dig_cdc);
 
 #ifdef CONFIG_SAMSUNG_JACK
-	hs_jack.codec = codec;
+	hs_jack.card = rtd->card;
 #endif /* CONFIG_SAMSUNG_JACK */
 
 #ifdef CONFIG_SND_SOC_WCD_MBHC
@@ -2947,20 +2947,20 @@ err:
 void msm8952_set_micbias(bool state)
 {
 	struct snd_soc_jack *jack = &hs_jack;
-	struct snd_soc_codec *codec;
+	struct snd_soc_card *card;
 	struct snd_soc_dapm_context *dapm;
 	char *str = "MIC BIAS Power External2";
 	int ret = 0;
 
-	if (jack->codec == NULL) {
+	if (jack->card == NULL) {
 		pr_err("%s codec is NULL\n", __func__);
 		return;
 	}
 	pr_info("%s : %s, state=%d\n", __func__, str, state);
 
 	mutex_lock(&jack_mutex);
-	codec = jack->codec;
-	dapm = &codec->dapm;
+	card = jack->card;
+	dapm = &card->dapm;
 
 	if (state == true)
 		ret = snd_soc_dapm_force_enable_pin(dapm, str);
@@ -3002,19 +3002,19 @@ void msm8952_mpp_enable(int earjack_adc, int enable)
 static int msm8952_get_adc(void)
 {
 	struct snd_soc_jack *jack = &hs_jack;
-	struct snd_soc_codec *codec;
-	struct msm8916_asoc_mach_data *pdata;
+	struct snd_soc_card *card = card;
+	struct msm_asoc_mach_data *pdata =
+			snd_soc_card_get_drvdata(card);
 	struct qpnp_vadc_result result;
 	struct qpnp_vadc_chip *earjack_vadc;
 	uint32_t mpp_ch;
 	int adc;
 
-	if (jack->codec == NULL) {
-		pr_err("%s codec==NULL\n", __func__);
+	if (jack->card == NULL) {
+		pr_err("%s codec is NULL\n", __func__);
 		return -1;
 	}
-	codec = jack->codec;
-	pdata = snd_soc_card_get_drvdata(codec->component.card);
+	card = jack->card;
 
 	mpp_ch = pdata->mpp_ch_scale[0] + P_MUX1_1_3 - 1;
 
@@ -3034,7 +3034,7 @@ static int msm8952_get_adc(void)
 
 	msm8952_mpp_enable(pdata->earjack_adc, 1);
 
-	earjack_vadc = qpnp_get_vadc(codec->component.card->dev,
+	earjack_vadc = qpnp_get_vadc(card->dev,
 		"earjack-read");
 	qpnp_vadc_read(earjack_vadc,  mpp_ch, &result);
 
