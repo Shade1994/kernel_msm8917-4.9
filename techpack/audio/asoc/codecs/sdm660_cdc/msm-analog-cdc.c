@@ -95,7 +95,7 @@ static char on_demand_supply_name[][MAX_ON_DEMAND_SUPPLY_NAME_LENGTH] = {
 	"cdc-vdd-l1",
 };
 
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 static struct wcd_mbhc_register
 	wcd_mbhc_registers[WCD_MBHC_REG_FUNC_MAX] = {
 	WCD_MBHC_REGISTER("WCD_MBHC_L_DET_EN",
@@ -168,7 +168,7 @@ static struct wcd_mbhc_register
 	WCD_MBHC_REGISTER("WCD_MBHC_FSM_STATUS", 0, 0, 0, 0),
 	WCD_MBHC_REGISTER("WCD_MBHC_MUX_CTL", 0, 0, 0, 0),
 };
-#endif /* #ifdef CONFIG_SND_SOC_WCD_MBHC */
+#endif /* #if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC) */
 
 /* Multiply gain_adj and offset by 1000 and 100 to avoid float arithmetic */
 static const struct wcd_imped_i_ref imped_i_ref[] = {
@@ -2968,7 +2968,7 @@ static int msm_anlg_cdc_hphl_dac_event(struct snd_soc_dapm_widget *w,
 			MSM89XX_PMIC_DIGITAL_CDC_DIG_CLK_CTL, 0x01, 0x01);
 		snd_soc_update_bits(codec,
 			MSM89XX_PMIC_DIGITAL_CDC_ANA_CLK_CTL, 0x02, 0x02);
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 		if (!ret)
 			wcd_imped_config(codec, impedl, true);
 		else
@@ -2981,7 +2981,7 @@ static int msm_anlg_cdc_hphl_dac_event(struct snd_soc_dapm_widget *w,
 			MSM89XX_PMIC_ANALOG_RX_HPH_L_PA_DAC_CTL, 0x02, 0x00);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 		wcd_imped_config(codec, impedl, false);
 #endif /* CONFIG_SND_SOC_WCD_MBHC */
 		snd_soc_update_bits(codec,
@@ -4058,7 +4058,7 @@ powerup:
 	return NOTIFY_OK;
 }
 
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 int msm_anlg_cdc_hs_detect(struct snd_soc_codec *codec,
 			   struct wcd_mbhc_config *mbhc_cfg)
 {
@@ -4251,7 +4251,9 @@ static int msm_anlg_cdc_soc_probe(struct snd_soc_codec *codec)
 {
 	struct sdm660_cdc_priv *sdm660_cdc;
 	struct snd_soc_dapm_context *dapm = snd_soc_codec_get_dapm(codec);
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 	int ret;
+#endif /* CONFIG_SND_SOC_WCD_MBHC */
 
 	sdm660_cdc = dev_get_drvdata(codec->dev);
 	sdm660_cdc->codec = codec;
@@ -4342,7 +4344,7 @@ static int msm_anlg_cdc_soc_probe(struct snd_soc_codec *codec)
 			&sdm660_cdc->on_demand_list[ON_DEMAND_VDDA18_L10]);
 	atomic_set(&sdm660_cdc->on_demand_list[ON_DEMAND_VDDA18_L10].ref,
 		   0);
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 	sdm660_cdc->fw_data = devm_kzalloc(codec->dev,
 					sizeof(*(sdm660_cdc->fw_data)),
 					GFP_KERNEL);
@@ -4401,7 +4403,7 @@ static int msm_anlg_cdc_soc_remove(struct snd_soc_codec *codec)
 	sdm660_cdc_priv->on_demand_list[ON_DEMAND_VDDA18_L10].supply = NULL;
 	atomic_set(&sdm660_cdc_priv->on_demand_list[ON_DEMAND_VDDA18_L10].ref,
 		   0);
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 	wcd_mbhc_deinit(&sdm660_cdc_priv->mbhc);
 #endif /* CONFIG_SND_SOC_WCD_MBHC */
 

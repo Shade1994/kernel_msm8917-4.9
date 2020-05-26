@@ -28,6 +28,10 @@
 #include <ipc/apr.h>
 #include "adsp_err.h"
 
+#ifdef CONFIG_SEC_SND_ADAPTATION
+#include <dsp/sec_adaptation.h>
+#endif /* CONFIG_SEC_SND_ADAPTATION */
+
 #define TIMEOUT_MS 1000
 
 #define RESET_COPP_ID 99
@@ -2974,9 +2978,11 @@ int adm_open(int port_id, int path, int rate, int channel_mode, int topology,
 	void *adm_params = NULL;
 	int param_size;
 
-	pr_debug("%s:port %#x path:%d rate:%d mode:%d perf_mode:%d,topo_id %d\n",
+	pr_info("%s:port %#x path:%d rate:%d mode:%d perf_mode:%d,topo_id %d\n",
 		 __func__, port_id, path, rate, channel_mode, perf_mode,
 		 topology);
+	pr_info("%s:bit_width:%d app_type:%#x acdb_id:%d\n",
+		__func__, bit_width, app_type, acdb_id);
 
 	port_id = q6audio_convert_virtual_to_portid(port_id);
 	port_idx = adm_validate_and_get_port_index(port_id);
@@ -3028,7 +3034,16 @@ int adm_open(int port_id, int path, int rate, int channel_mode, int topology,
 	if ((topology == VPM_TX_SM_ECNS_V2_COPP_TOPOLOGY) ||
 	    (topology == VPM_TX_SM_ECNS_COPP_TOPOLOGY) ||
 	    (topology == VPM_TX_DM_FLUENCE_COPP_TOPOLOGY) ||
-	    (topology == VPM_TX_DM_RFECNS_COPP_TOPOLOGY))
+	    (topology == VPM_TX_DM_RFECNS_COPP_TOPOLOGY)
+	    || (topology == VPM_TX_SM_LVVEFQ_COPP_TOPOLOGY)
+	    || (topology == VPM_TX_DM_LVVEFQ_COPP_TOPOLOGY)
+	    || (topology == VPM_TX_SM_LVSAFQ_COPP_TOPOLOGY)
+	    || (topology == VOICE_TX_DIAMONDVOICE_FVSAM_DM)
+	    || (topology == VOICE_TX_DIAMONDVOICE_FVSAM_QM)
+#ifdef CONFIG_SEC_SND_ADAPTATION
+	    || (topology == VOICE_TX_DIAMONDVOICE_FRSAM_DM)
+#endif
+	    )
 		rate = 16000;
 
 	/*
@@ -3727,7 +3742,7 @@ int adm_close(int port_id, int perf_mode, int copp_idx)
 	int ret = 0, port_idx;
 	int copp_id = RESET_COPP_ID;
 
-	pr_debug("%s: port_id=0x%x perf_mode: %d copp_idx: %d\n", __func__,
+	pr_info("%s: port_id=0x%x perf_mode: %d copp_idx: %d\n", __func__,
 		 port_id, perf_mode, copp_idx);
 
 	port_id = q6audio_convert_virtual_to_portid(port_id);

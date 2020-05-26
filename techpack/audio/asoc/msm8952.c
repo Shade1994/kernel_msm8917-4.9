@@ -76,15 +76,15 @@ static struct snd_info_entry *codec_root;
 
 static int msm8952_enable_dig_cdc_clk(struct snd_soc_codec *codec, int enable,
 					bool dapm);
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 static bool msm8952_swap_gnd_mic(struct snd_soc_codec *codec, bool active);
-#endif /* #ifdef CONFIG_SND_SOC_WCD_MBHC */
+#endif /* #if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC) */
 static int msm8952_mclk_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event);
 static int msm8952_wsa_switch_event(struct snd_soc_dapm_widget *w,
 			      struct snd_kcontrol *kcontrol, int event);
 
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 /*
  * Android L spec
  * Need to report LINEIN
@@ -385,7 +385,7 @@ static int enable_spk_ext_pa(struct snd_soc_codec *codec, int enable)
 	return 0;
 }
 
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 static bool msm8952_swap_gnd_mic(struct snd_soc_codec *codec, bool active)
 {
 	struct snd_soc_card *card = codec->component.card;
@@ -423,7 +423,7 @@ static bool msm8952_swap_gnd_mic(struct snd_soc_codec *codec, bool active)
 }
 #endif /* CONFIG_SND_SOC_WCD_MBHC */
 
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 /* Validate whether US EU switch is present or not */
 int is_us_eu_switch_gpio_support(struct platform_device *pdev,
 		struct msm_asoc_mach_data *pdata)
@@ -1529,7 +1529,7 @@ static void msm_quin_mi2s_snd_shutdown(struct snd_pcm_substream *substream)
 	}
 }
 
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 static void *def_msm8952_wcd_mbhc_cal(void)
 {
 	void *msm8952_wcd_cal;
@@ -1587,7 +1587,7 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = snd_soc_codec_get_dapm(ana_cdc);
 	struct msm_asoc_mach_data *pdata = snd_soc_card_get_drvdata(rtd->card);
 	struct snd_card *card;
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 	int ret = -ENOMEM;
 #endif /* CONFIG_SND_SOC_WCD_MBHC */
 
@@ -1622,7 +1622,7 @@ static int msm_audrx_init(struct snd_soc_pcm_runtime *rtd)
 	hs_jack.card = rtd->card;
 #endif /* CONFIG_SAMSUNG_JACK */
 
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 	mbhc_cfg.calibration = def_msm8952_wcd_mbhc_cal();
 	if (mbhc_cfg.calibration) {
 		ret = msm_anlg_cdc_hs_detect(ana_cdc, &mbhc_cfg);
@@ -3369,7 +3369,7 @@ parse_mclk_freq:
 
 	pdata->spk_ext_pa_gpio_p = of_parse_phandle(pdev->dev.of_node,
 							spk_ext_pa, 0);
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 	ret = is_us_eu_switch_gpio_support(pdev, pdata);
 	if (ret < 0) {
 		pr_err("%s: failed to is_us_eu_switch_gpio_support %d\n",
@@ -3403,7 +3403,7 @@ parse_mclk_freq:
 			__func__, hs_micbias_type);
 		goto err;
 	}
-#ifdef CONFIG_SND_SOC_WCD_MBHC
+#if IS_ENABLED(CONFIG_SND_SOC_WCD_MBHC)
 	if (!strcmp(type, "external")) {
 		dev_err(&pdev->dev, "Headset is using external micbias\n");
 		mbhc_cfg.hs_ext_micbias = true;
