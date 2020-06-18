@@ -9780,6 +9780,7 @@ static int sec_battery_probe(struct platform_device *pdev)
 	battery_cfg.drv_data = battery;
 
 	/* init power supplier framework */
+	battery->psy_pogo = power_supply_register(&pdev->dev, &pogo_power_supply_desc, &battery_cfg);
 	if (!battery->psy_pogo) {
 		dev_err(battery->dev,
 			"%s: Failed to Register psy_pogo\n", __func__);
